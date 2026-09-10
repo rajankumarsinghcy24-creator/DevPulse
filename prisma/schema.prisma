@@ -1,0 +1,89 @@
+// DevPulse - Persistent Data Layer (PostgreSQL & Prisma)
+// Prisma Schema Definition
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum Role {
+  developer
+  designer
+  manager
+}
+
+enum ProjectStatus {
+  active
+  completed
+  archived
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
+enum TaskStatus {
+  todo
+  in_progress @map("in-progress")
+  done
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  role      Role      @default(developer)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relationships
+  projects  Project[] @relation("UserProjects")
+  tasks     Task[]    @relation("AssignedTasks")
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String
+  status      ProjectStatus @default(active)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relationships
+  owner       User          @relation("UserProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  projectId   String
+  assignedTo  String?
+  priority    Priority   @default(medium)
+  status      TaskStatus @default(todo)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relationships
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    User?      @relation("AssignedTasks", fields: [assignedTo], references: [id], onDelete: SetNull)
+
+  @@map("tasks")
+}

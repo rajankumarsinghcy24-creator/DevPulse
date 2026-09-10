@@ -1,0 +1,41 @@
+{
+  "name": "devpulse-persistent-data-layer-postgresql",
+  "version": "1.0.0",
+  "description": "DevPulse - Persistent Data Layer with PostgreSQL & Prisma ORM (Week 3 / Task 3)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "seed": "node prisma/seed.js",
+    "test": "node tests/testApi.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "keywords": [
+    "devpulse",
+    "express",
+    "postgresql",
+    "prisma",
+    "rest-api",
+    "persistent-data-layer",
+    "internship",
+    "task3"
+  ],
+  "author": "DevPulse Team",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "prisma": "^5.22.0"
+  }
+}
