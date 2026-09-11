@@ -1,0 +1,35 @@
+{
+  "name": "devpulse-task4-ai-powered-platform",
+  "version": "1.0.0",
+  "description": "DevPulse - Capstone Task 4: AI-Powered Project & Task Management Platform",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "start:server": "npm --prefix server start",
+    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:migrate": "npm --prefix server run prisma:migrate",
+    "prisma:studio": "npm --prefix server run prisma:studio",
+    "seed": "npm --prefix server run seed",
+    "test": "npm --prefix server test"
+  },
+  "keywords": [
+    "devpulse",
+    "capstone",
+    "ai",
+    "react",
+    "express",
+    "postgresql",
+    "prisma",
+    "tailwind",
+    "task4"
+  ],
+  "author": "DevPulse Team",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

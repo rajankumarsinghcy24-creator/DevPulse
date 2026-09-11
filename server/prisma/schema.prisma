@@ -1,0 +1,110 @@
+// DevPulse Capstone Task 4 - Prisma Relational Schema
+// Database Provider: PostgreSQL (Neon compatible)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum Role {
+  developer
+  designer
+  manager
+}
+
+enum ProjectStatus {
+  active
+  completed
+  archived
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
+enum TaskStatus {
+  todo
+  in_progress @map("in-progress")
+  done
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @default("")
+  role         Role      @default(developer)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relationships
+  ownedProjects Project[]  @relation("ProjectOwner")
+  assignedTasks Task[]     @relation("TaskAssignee")
+  activities    Activity[] @relation("UserActivities")
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String
+  status      ProjectStatus @default(active)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relationships
+  owner      User       @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+  activities Activity[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  projectId   String
+  assignedTo  String?
+  priority    Priority   @default(medium)
+  status      TaskStatus @default(todo)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relationships
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee   User?      @relation("TaskAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  activities Activity[]
+
+  @@map("tasks")
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  action    String
+  details   String
+  userId    String
+  projectId String?
+  taskId    String?
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user    User     @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task    Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
