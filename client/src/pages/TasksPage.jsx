@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { taskService, projectService } from "../services/api";
+import { taskService, projectService, userService } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/common/ConfirmModal";
+import Badge from "../components/common/Badge";
 import {
   CheckSquare,
   Search,
@@ -25,6 +26,7 @@ const TasksPage = () => {
   const { addToast } = useToast();
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,6 +45,7 @@ const TasksPage = () => {
     title: "",
     description: "",
     projectId: "",
+    assignedTo: "",
     priority: "medium",
     status: "todo",
     dueDate: ""
@@ -58,19 +61,32 @@ const TasksPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [tasksRes, projectsRes] = await Promise.all([
+      const [tasksRes, projectsRes, usersRes] = await Promise.allSettled([
         taskService.getTasks(),
-        projectService.getProjects()
+        projectService.getProjects(),
+        userService.getUsers()
       ]);
 
-      if (tasksRes.success) {
-        setTasks(tasksRes.data || []);
+      if (tasksRes.status === "fulfilled" && tasksRes.value?.success) {
+        setTasks(tasksRes.value.data || []);
+      } else if (tasksRes.status === "rejected") {
+        setError(
+          tasksRes.reason?.response?.data?.error?.message ||
+          tasksRes.reason?.response?.data?.message ||
+          "Failed to load tasks."
+        );
       }
-      if (projectsRes.success) {
-        setProjects(projectsRes.data || []);
-        if (projectsRes.data?.length > 0 && !formData.projectId) {
-          setFormData((prev) => ({ ...prev, projectId: projectsRes.data[0].id }));
+
+      if (projectsRes.status === "fulfilled" && projectsRes.value?.success) {
+        const pList = projectsRes.value.data || [];
+        setProjects(pList);
+        if (pList.length > 0 && !formData.projectId) {
+          setFormData((prev) => ({ ...prev, projectId: pList[0].id }));
         }
+      }
+
+      if (usersRes.status === "fulfilled" && usersRes.value?.success) {
+        setUsers(usersRes.value.data || []);
       }
     } catch (err) {
       setError(
@@ -94,6 +110,7 @@ const TasksPage = () => {
       title: "",
       description: "",
       projectId: projects[0]?.id || "",
+      assignedTo: "",
       priority: "medium",
       status: "todo",
       dueDate: ""
@@ -108,6 +125,7 @@ const TasksPage = () => {
       title: task.title,
       description: task.description || "",
       projectId: task.projectId,
+      assignedTo: task.assignedTo || task.assignee?.id || "",
       priority: task.priority,
       status: task.status,
       dueDate: task.dueDate ? task.dueDate.split("T")[0] : ""
@@ -123,6 +141,7 @@ const TasksPage = () => {
     try {
       const payload = {
         ...formData,
+        assignedTo: formData.assignedTo || null,
         dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null
       };
 
@@ -196,17 +215,6 @@ const TasksPage = () => {
 
     return matchesSearch && matchesStatus && matchesPriority && matchesProject && matchesOverdue;
   });
-
-  const getPriorityBadge = (priority) => {
-    switch (priority) {
-      case "high":
-        return "bg-[#FDF2F2] text-[#C94C4C] border-[#FDE2E2]";
-      case "medium":
-        return "bg-[#FEF9F0] text-[#D97706] border-[#FDF0D5]";
-      default:
-        return "bg-[#EAF6F5] text-[#2A9D8F] border-[#D5ECE9]";
-    }
-  };
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
@@ -396,20 +404,21 @@ const TasksPage = () => {
                         </Link>
                       )}
 
-                      {task.assignee && (
+                      {task.assignee ? (
                         <span className="flex items-center gap-1 text-[#667085]">
                           <User className="w-3.5 h-3.5 text-[#98A2B3] flex-shrink-0" />
                           <span className="truncate">{task.assignee.name}</span>
                         </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[#98A2B3] text-[11px]">
+                          <User className="w-3.5 h-3.5 text-[#98A2B3] flex-shrink-0" />
+                          <span>Unassigned</span>
+                        </span>
                       )}
 
-                      <span
-                        className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${getPriorityBadge(
-                          task.priority
-                        )}`}
-                      >
+                      <Badge variant={task.priority} size="sm" dot>
                         {task.priority}
-                      </span>
+                      </Badge>
 
                       {task.dueDate && (
                         <span
@@ -549,16 +558,36 @@ const TasksPage = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#1F2933] mb-1.5">
-                  Due Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#F7F7F2] border border-[#E7E7E0] rounded-xl text-[#1F2933] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F8B6D] focus:bg-white transition"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#1F2933] mb-1.5">
+                    Assignee (Optional)
+                  </label>
+                  <select
+                    value={formData.assignedTo}
+                    onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-[#F7F7F2] border border-[#E7E7E0] rounded-xl text-[#1F2933] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F8B6D] focus:bg-white transition"
+                  >
+                    <option value="">Unassigned</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name} ({u.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#1F2933] mb-1.5">
+                    Due Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-[#F7F7F2] border border-[#E7E7E0] rounded-xl text-[#1F2933] text-sm focus:outline-none focus:ring-2 focus:ring-[#0F8B6D] focus:bg-white transition"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E7E7E0]">

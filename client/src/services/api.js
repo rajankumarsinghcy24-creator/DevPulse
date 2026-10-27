@@ -70,6 +70,19 @@ export const authService = {
   }
 };
 
+// ==================== USERS SERVICE ====================
+export const userService = {
+  getUsers: async (params = {}) => {
+    const res = await api.get("/users", { params });
+    return res.data;
+  },
+
+  getUser: async (id) => {
+    const res = await api.get(`/users/${id}`);
+    return res.data;
+  }
+};
+
 // ==================== PROJECTS SERVICE ====================
 export const projectService = {
   getProjects: async (params = {}) => {

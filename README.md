@@ -15,6 +15,19 @@
 
 ---
 
+## 🚀 Project Evolution & Consolidation (Weeks 1–4)
+
+DevPulse is the culmination of a four-week engineering progression during the **Innovation Hacks Full Stack Internship**:
+
+| Milestone | Focus Area | Technology Stack | Key Contributions to Capstone |
+| :--- | :--- | :--- | :--- |
+| **Week 1 (Task 1)** | Frontend Productivity Dashboard | React, Vite, Tailwind CSS, Lucide | Design system tokens, color palettes, responsive layouts, `ProgressBar` threshold styling, and `Badge` component patterns. |
+| **Week 2 (Task 2)** | RESTful API Architecture | Node.js, Express, express-validator | Standardized HTTP response wrappers (`{ success, data, error }`), CRUD route contracts, input validation schemas, and error middleware. |
+| **Week 3 (Task 3)** | Persistent Relational Data Layer | PostgreSQL, Prisma ORM | Relational models (`User`, `Project`, `Task`), foreign key constraints with cascading deletes, Prisma migrations, and database seeding. |
+| **Week 4 (Capstone)** | Unified AI-Powered Platform | Full-Stack Monorepo | Authoritative consolidated repository adding JWT authentication, bcrypt password hashing, Google Gemini AI task generation, real-time activity feeds, user assignment, and end-to-end integration test suites. |
+
+---
+
 ## 🎯 Task 4 Capstone Objectives
 
 1. **Full-Stack Architecture**: Modern React (Vite + Tailwind CSS) client seamlessly paired with a Node.js + Express backend.
@@ -235,6 +248,11 @@ npm run dev
 | `POST` | `/api/auth/login` | Public | Login & receive JWT / HTTP-Only cookie |
 | `POST` | `/api/auth/logout` | Authenticated | Clear auth cookie and session |
 | `GET` | `/api/auth/me` | Authenticated | Get current authenticated user profile |
+| `GET` | `/api/users` | Authenticated | List all team users (safe fields, supports `?role=`) |
+| `GET` | `/api/users/:id` | Authenticated | Retrieve user by ID with assigned tasks & projects |
+| `POST` | `/api/users` | Authenticated | Create user profile |
+| `PUT` | `/api/users/:id` | Authenticated | Update user profile |
+| `DELETE` | `/api/users/:id` | Authenticated | Delete user |
 | `GET` | `/api/projects` | Authenticated | List all projects with progress & stats |
 | `GET` | `/api/projects/:id` | Authenticated | Retrieve project details & tasks |
 | `POST` | `/api/projects` | Authenticated | Create new project |

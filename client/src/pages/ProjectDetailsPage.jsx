@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { projectService, taskService } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/common/ConfirmModal";
+import ProgressBar from "../components/common/ProgressBar";
+import Badge from "../components/common/Badge";
 import {
   FolderKanban,
   CheckCircle2,
@@ -209,9 +211,9 @@ const ProjectDetailsPage = () => {
               <h1 className="text-xl sm:text-3xl font-bold text-[#1F2933] tracking-tight">
                 {project.name}
               </h1>
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border bg-[#E8F5F0] text-[#0F8B6D] border-[#B8EAD9]">
+              <Badge variant={project.status} dot size="sm">
                 {project.status}
-              </span>
+              </Badge>
             </div>
             <p className="text-xs sm:text-sm text-[#667085] max-w-2xl leading-relaxed">
               {project.description || "No description provided for this project."}
@@ -244,13 +246,13 @@ const ProjectDetailsPage = () => {
             Overall Progress
           </span>
           <div className="text-2xl font-bold text-[#1F2933] mt-1">{stats?.progress || 0}%</div>
-          {/* Thin Emerald Progress Bar */}
-          <div className="w-full bg-[#E8F5F0] h-1.5 rounded-full mt-2.5 overflow-hidden">
-            <div
-              className="bg-[#0F8B6D] h-full rounded-full transition-all duration-500"
-              style={{ width: `${stats?.progress || 0}%` }}
-            />
-          </div>
+          <ProgressBar
+            progress={stats?.progress || 0}
+            showLabel={false}
+            showPercentage={false}
+            size="sm"
+            className="mt-2.5"
+          />
         </div>
 
         <div className="p-5 rounded-2xl bg-white border border-[#E7E7E0] shadow-card">
