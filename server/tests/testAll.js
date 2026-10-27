@@ -21,6 +21,7 @@ const runScript = (scriptName) => {
 const runAll = async () => {
   try {
     await runScript("testAuth.js");
+    await runScript("testUsers.js");
     await runScript("testProjects.js");
     await runScript("testTasks.js");
     await runScript("testDashboard.js");

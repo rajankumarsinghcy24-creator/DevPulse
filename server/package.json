@@ -11,6 +11,7 @@
     "prisma:studio": "prisma studio",
     "seed": "node prisma/seed.js",
     "test:auth": "node tests/testAuth.js",
+    "test:users": "node tests/testUsers.js",
     "test:projects": "node tests/testProjects.js",
     "test:tasks": "node tests/testTasks.js",
     "test": "node tests/testAll.js"
